@@ -2,6 +2,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.text.SimpleDateFormat;
 import java.lang.Iterable;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Test {
 
@@ -36,20 +38,28 @@ public class Test {
          *
          */
         public Node traverseBreadth() throws Exception {
-            this.list.add(data);
-            if (this.data.list() == null) {
-                return this;
-            }
-            for (NodeAble subNode : this.data.list()) {
-                Node child = new Node(subNode);
-                this.list.addAll(child.traverseDepth().list);
-            }
+            Queue<Node> queue = new LinkedList<Node>();
+            queue.offer(this); 
+            this.list.add(this.data);
+            this.doBreadthTraversal(queue);
             return this;
+        }
+
+        private void doBreadthTraversal(Queue<Node> queue) {
+            Node node = queue.poll();
+            if (node.data.list() == null) {
+                return;
+            }
+            for (NodeAble subNode : node.data.list()) {
+                this.list.add(subNode);
+                queue.offer(new Node(subNode));
+            }
+            doBreadthTraversal(queue);
         }
     }
 
     /**
-     * Just an interface to ensure a "list" and "getOutput" function
+     * Just an interface to ensure a "list" and "output" functions
      */
     public interface NodeAble {
         public Iterable<NodeAble> list();
@@ -118,6 +128,7 @@ public class Test {
                 for (NodeAble nodeAble : rootNode.list) {
                     System.out.println(nodeAble.getSimpleOutput());
                 }
+                System.out.println("\n\n");
                 for (NodeAble nodeAble : rootNode.list) {
                     System.out.println(nodeAble.getOutput());
                 }
@@ -127,6 +138,7 @@ public class Test {
                 for (NodeAble nodeAble : rootNode.list) {
                     System.out.println(nodeAble.getSimpleOutput());
                 }
+                System.out.println("\n\n");
                 for (NodeAble nodeAble : rootNode.list) {
                     System.out.println(nodeAble.getOutput());
                 }
