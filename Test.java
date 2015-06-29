@@ -20,7 +20,6 @@ public class Test {
         }
 
         /**
-         * 
          */
         public Node traverseDepth() throws Exception {
             this.list.add(data);
@@ -45,14 +44,16 @@ public class Test {
             return this;
         }
 
+        /**
+         */
         private void doBreadthTraversal(Queue<Node> queue) {
             Node node = queue.poll();
             if (node.data.list() == null) {
                 return;
             }
             for (NodeAble subNode : node.data.list()) {
-                this.list.add(subNode);
                 queue.offer(new Node(subNode));
+                this.list.add(subNode);
             }
             doBreadthTraversal(queue);
         }
@@ -122,9 +123,12 @@ public class Test {
         try {
             Test test = new Test();
             FileNodeAble root = test.new FileNodeAble(new File(argc[0]));
+
             if (argc.length > 1 && argc[1].equalsIgnoreCase("breadth")) {
                 Test.Node rootNode = test.new Node(root);
                 rootNode.traverseBreadth();
+
+                // spit out folder by breadth
                 for (NodeAble nodeAble : rootNode.list) {
                     System.out.println(nodeAble.getSimpleOutput());
                 }
@@ -135,6 +139,8 @@ public class Test {
             } else {
                 Test.Node rootNode = test.new Node(root);
                 rootNode.traverseDepth();
+
+                // spit out folder by depth
                 for (NodeAble nodeAble : rootNode.list) {
                     System.out.println(nodeAble.getSimpleOutput());
                 }
