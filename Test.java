@@ -11,22 +11,31 @@ public class Test {
      * A node of a tree
      */
     public class Node {
+        // this is a basically the node itself
         private NodeAble data;
+
+        // this is the children of the node
         private ArrayList<NodeAble> list;
 
+        /**
+         * Constructor that initializes the relative "root" and the children which will be empty.
+         * @param  a <NodeAble> object
+         */
         public Node(NodeAble object) {
             this.data = object;
             this.list = new ArrayList<NodeAble>();
         }
 
         /**
+         * This recursive function basically starts att the root node and then
+         * goes traverses the populates the Nodes via <NodeAble> getChildren.
          */
         public Node traverseDepth() throws Exception {
             this.list.add(data);
-            if (this.data.list() == null) {
+            if (this.data.getChildren() == null) {
                 return this;
             }
-            for (NodeAble subNode : this.data.list()) {
+            for (NodeAble subNode : this.data.getChildren()) {
                 Node child = new Node(subNode);
                 this.list.addAll(child.traverseDepth().list);
             }
@@ -34,7 +43,8 @@ public class Test {
         }
 
         /**
-         *
+         * This sets up a FIFO queue and then invokes the recurive function
+         * which populates the child nodes.
          */
         public Node traverseBreadth() throws Exception {
             Queue<Node> queue = new LinkedList<Node>();
@@ -45,13 +55,14 @@ public class Test {
         }
 
         /**
+         * This uses a queue 
          */
         private void doBreadthTraversal(Queue<Node> queue) {
             Node node = queue.poll();
-            if (node.data.list() == null) {
+            if (node == null || node.data.getChildren() == null) {
                 return;
             }
-            for (NodeAble subNode : node.data.list()) {
+            for (NodeAble subNode : node.data.getChildren()) {
                 queue.offer(new Node(subNode));
                 this.list.add(subNode);
             }
@@ -63,16 +74,17 @@ public class Test {
      * Just an interface to ensure a "list" and "output" functions
      */
     public interface NodeAble {
-        public Iterable<NodeAble> list();
+        public Iterable<NodeAble> getChildren();
         public String getOutput();
         public String getSimpleOutput();
     }
 
     /**
-     * This is a java.io.File  implementation of "NodeAble".
+     * This is a java.io.File implementation of "NodeAble".
      */
     public class FileNodeAble implements NodeAble {
         private File file;
+        private int subChildren = 0;
 
         /**
          * Constructor
@@ -87,12 +99,13 @@ public class Test {
          * A basic function to get the childen of a "node"
          * @return an Iterable list of FileNodeAble
          */
-        public Iterable<NodeAble> list() {
+        public Iterable<NodeAble> getChildren() {
             ArrayList<NodeAble> children = new ArrayList<NodeAble>();
             File[] subFiles = this.file.listFiles();
             if (subFiles == null) {
                 return null;
             }
+            this.subChildren = subFiles.length;
             for (File f : subFiles) {
                 children.add(new FileNodeAble(f));
             }
@@ -104,9 +117,13 @@ public class Test {
          * @return String with the file path,size, and modified date
          */
         public String getOutput() {
-            String output = file.getAbsolutePath();
-            output = output + "\t" + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(file.lastModified());
-            output = output + "\t" + file.length();
+            String output = this.file.getAbsolutePath();
+            output = output + "\t" + new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(this.file.lastModified());
+            if (this.file.isDirectory()) {
+                output = output + "\t" + this.subChildren;
+            } else {
+                output = output + "\t" + this.file.length();
+            }
             return output;
         }
 
@@ -115,7 +132,7 @@ public class Test {
          * @return String with the file path
          */
         public String getSimpleOutput() {
-            return file.getAbsolutePath();
+            return this.file.getAbsolutePath();
         }
     }
 
@@ -124,7 +141,9 @@ public class Test {
             Test test = new Test();
             FileNodeAble root = test.new FileNodeAble(new File(argc[0]));
 
+            String help = "\n(Size is file count for directories)\n";
             if (argc.length > 1 && argc[1].equalsIgnoreCase("breadth")) {
+                System.out.println("\n\nLIST BY BREADTH\n" + help);
                 Test.Node rootNode = test.new Node(root);
                 rootNode.traverseBreadth();
 
@@ -137,6 +156,7 @@ public class Test {
                     System.out.println(nodeAble.getOutput());
                 }
             } else {
+                System.out.println("\n\nLIST BY DEPTH\n" + help);
                 Test.Node rootNode = test.new Node(root);
                 rootNode.traverseDepth();
 
