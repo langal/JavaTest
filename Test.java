@@ -1,5 +1,4 @@
 import java.io.File;
-import java.util.ArrayList;
 import java.text.SimpleDateFormat;
 import java.lang.Iterable;
 import java.util.LinkedList;
@@ -14,8 +13,8 @@ public class Test {
         // this is a basically the node itself
         private NodeAble data;
 
-        // this is the children of the node
-        private ArrayList<NodeAble> list;
+        // this is all the children of the node
+        private LinkedList<NodeAble> list;
 
         /**
          * Constructor that initializes the relative "root" and the children which will be empty.
@@ -23,7 +22,7 @@ public class Test {
          */
         public Node(NodeAble object) {
             this.data = object;
-            this.list = new ArrayList<NodeAble>();
+            this.list = new LinkedList<NodeAble>();
         }
 
         /**
@@ -100,7 +99,7 @@ public class Test {
          * @return an Iterable list of FileNodeAble
          */
         public Iterable<NodeAble> getChildren() {
-            ArrayList<NodeAble> children = new ArrayList<NodeAble>();
+            LinkedList<NodeAble> children = new LinkedList<NodeAble>();
             File[] subFiles = this.file.listFiles();
             if (subFiles == null) {
                 return null;
@@ -122,7 +121,7 @@ public class Test {
             if (this.file.isDirectory()) {
                 output = output + "\t" + this.subChildren;
             } else {
-                output = output + "\t" + this.file.length();
+                output = output + "\t" + this.file.length() + " bytes";
             }
             return output;
         }
@@ -136,6 +135,10 @@ public class Test {
         }
     }
 
+    /**
+     *  The first argument should be the folder
+     *  The second argument should "breadth" for a "breadth" traversal.
+     */
     public static void main(String argc[]) {
         try {
             Test test = new Test();
