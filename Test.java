@@ -11,30 +11,30 @@ public class Test {
      */
     public class Node {
         // this is a basically the node itself
-        private NodeAble data;
+        private NodeData data;
 
         // this is all the children of the node
-        private LinkedList<NodeAble> list;
+        private LinkedList<Node> list;
 
         /**
          * Constructor that initializes the relative "root" and the children which will be empty.
-         * @param  a <NodeAble> object
+         * @param  a <NodeData> object
          */
-        public Node(NodeAble object) {
+        public Node(NodeData object) {
             this.data = object;
-            this.list = new LinkedList<NodeAble>();
+            this.list = new LinkedList<Node>();
         }
 
         /**
          * This recursive function basically starts att the root node and then
-         * goes traverses the populates the Nodes via <NodeAble> getChildren.
+         * goes traverses the populates the Nodes via <NodeData> getChildren.
          */
         public Node traverseDepth() throws Exception {
-            this.list.add(data);
+            this.list.add(this);
             if (this.data.getChildren() == null) {
                 return this;
             }
-            for (NodeAble subNode : this.data.getChildren()) {
+            for (NodeData subNode : this.data.getChildren()) {
                 Node child = new Node(subNode);
                 this.list.addAll(child.traverseDepth().list);
             }
@@ -48,7 +48,7 @@ public class Test {
         public Node traverseBreadth() throws Exception {
             Queue<Node> queue = new LinkedList<Node>();
             queue.offer(this); 
-            this.list.add(this.data);
+            this.list.add(this);
             this.doBreadthTraversal(queue);
             return this;
         }
@@ -61,8 +61,9 @@ public class Test {
             if (node == null || node.data.getChildren() == null) {
                 return;
             }
-            for (NodeAble subNode : node.data.getChildren()) {
-                queue.offer(new Node(subNode));
+            for (NodeData subNodeData : node.data.getChildren()) {
+                Node subNode = new Node(subNodeData); 
+                queue.offer(subNode);
                 this.list.add(subNode);
             }
             doBreadthTraversal(queue);
@@ -72,41 +73,41 @@ public class Test {
     /**
      * Just an interface to ensure a "list" and "output" functions
      */
-    public interface NodeAble {
-        public Iterable<NodeAble> getChildren();
+    public interface NodeData {
+        public Iterable<NodeData> getChildren();
         public String getOutput();
         public String getSimpleOutput();
     }
 
     /**
-     * This is a java.io.File implementation of "NodeAble".
+     * This is a java.io.File implementation of "NodeData".
      */
-    public class FileNodeAble implements NodeAble {
+    public class FileNodeData implements NodeData {
         private File file;
         private int subChildren = 0;
 
         /**
          * Constructor
          * @param theFile a java.io.File that is the "node"
-         * @return an instance of FileNodeAble
+         * @return an instance of FileNodeData
          */
-        public FileNodeAble(File theFile) {
+        public FileNodeData(File theFile) {
             this.file = theFile;
         }
         
         /**
          * A basic function to get the childen of a "node"
-         * @return an Iterable list of FileNodeAble
+         * @return an Iterable list of FileNodeData
          */
-        public Iterable<NodeAble> getChildren() {
-            LinkedList<NodeAble> children = new LinkedList<NodeAble>();
+        public Iterable<NodeData> getChildren() {
+            LinkedList<NodeData> children = new LinkedList<NodeData>();
             File[] subFiles = this.file.listFiles();
             if (subFiles == null) {
                 return null;
             }
             this.subChildren = subFiles.length;
             for (File f : subFiles) {
-                children.add(new FileNodeAble(f));
+                children.add(new FileNodeData(f));
             }
             return children;
         }
@@ -142,7 +143,7 @@ public class Test {
     public static void main(String argc[]) {
         try {
             Test test = new Test();
-            FileNodeAble root = test.new FileNodeAble(new File(argc[0]));
+            FileNodeData root = test.new FileNodeData(new File(argc[0]));
 
             String help = "\n(Size is file count for directories)\n";
             if (argc.length > 1 && argc[1].equalsIgnoreCase("breadth")) {
@@ -151,12 +152,12 @@ public class Test {
                 rootNode.traverseBreadth();
 
                 // spit out folder by breadth
-                for (NodeAble nodeAble : rootNode.list) {
-                    System.out.println(nodeAble.getSimpleOutput());
+                for (Node node : rootNode.list) {
+                    System.out.println(node.data.getSimpleOutput());
                 }
                 System.out.println("\n\n");
-                for (NodeAble nodeAble : rootNode.list) {
-                    System.out.println(nodeAble.getOutput());
+                for (Node node : rootNode.list) {
+                    System.out.println(node.data.getOutput());
                 }
             } else {
                 System.out.println("\n\nLIST BY DEPTH\n" + help);
@@ -164,12 +165,12 @@ public class Test {
                 rootNode.traverseDepth();
 
                 // spit out folder by depth
-                for (NodeAble nodeAble : rootNode.list) {
-                    System.out.println(nodeAble.getSimpleOutput());
+                for (Node node : rootNode.list) {
+                    System.out.println(node.data.getSimpleOutput());
                 }
                 System.out.println("\n\n");
-                for (NodeAble nodeAble : rootNode.list) {
-                    System.out.println(nodeAble.getOutput());
+                for (Node node : rootNode.list) {
+                    System.out.println(node.data.getOutput());
                 }
             }
         } catch (Exception e) {
