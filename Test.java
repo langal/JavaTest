@@ -2,22 +2,22 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.lang.Iterable;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Stack;
 
 public class Test {
 
     /**
-     * A node of a tree
+     * A structure that contains a node (ie. File) and a list of its traversed children.
      */
     public class Node {
         // this is a basically the node itself
         private NodeData data;
 
-        // this is all the children of the node
+        // this is a list of the traversed Nodes
         private LinkedList<Node> list;
 
         /**
-         * Constructor that initializes the relative "root" and the children which will be empty.
+         * Constructor that initializes the relative "root" and the traversed list which will be empty.
          * @param  a <NodeData> object
          */
         public Node(NodeData object) {
@@ -26,52 +26,113 @@ public class Test {
         }
 
         /**
-         * This recursive function basically starts att the root node and then
-         * goes traverses the populates the Nodes via <NodeData> getChildren.
+         * This basically calls the "traverse" method with an underlying stack 
+         * to keep track of which nodes that are to be traversed. It
+         * initializes the stack with the root node.
          */
-        public Node traverseDepth() throws Exception {
-            this.list.add(this);
-            if (this.data.getChildren() == null) {
-                return this;
-            }
-            for (NodeData subNode : this.data.getChildren()) {
-                Node child = new Node(subNode);
-                this.list.addAll(child.traverseDepth().list);
-            }
+        public Node traverseDepth() {
+            TraversingSet<Node> set = new TraversingSetStack<Node>();
+            set.put(this); 
+            this.traverse(set);
             return this;
         }
 
         /**
-         * This sets up a FIFO queue and then invokes the recurive function
-         * which populates the child nodes.
+         * This basically calls the "traverse" method with an underlying queue
+         * to keep track of which nodes that are to be traversed.  It 
+         * initializes the queue with the root node.
          */
-        public Node traverseBreadth() throws Exception {
-            Queue<Node> queue = new LinkedList<Node>();
-            queue.offer(this); 
-            this.list.add(this);
-            this.doBreadthTraversal(queue);
+        public Node traverseBreadth() {
+            TraversingSet<Node> set = new TraversingSetQueue<Node>();
+            set.put(this); 
+            this.traverse(set);
             return this;
         }
 
         /**
-         * This uses a queue 
+         * This method recursive looks at a set of Nodes which are to be traversed
+         * and basically adds them to the traversed list as they are processed and adds 
+         * any children onto the list of nodes that are to be traversed.
+         *
+         * @param set This object needs to implement basic stack/queue operations
          */
-        private void doBreadthTraversal(Queue<Node> queue) {
-            Node node = queue.poll();
-            if (node == null || node.data.getChildren() == null) {
+        private void traverse(TraversingSet<Node> set) {
+            if (set.isEmpty()) {
                 return;
             }
-            for (NodeData subNodeData : node.data.getChildren()) {
-                Node subNode = new Node(subNodeData); 
-                queue.offer(subNode);
-                this.list.add(subNode);
+            Node node = set.get();
+            this.list.add(node);
+            if (node != null && node.data.getChildren() != null) {
+                for (NodeData subNodeData : node.data.getChildren()) {
+                    Node subNode = new Node(subNodeData); 
+                    set.put(subNode);
+                }
             }
-            doBreadthTraversal(queue);
+            traverse(set);
+        }
+
+    }
+
+    /**
+     * This interface is basically used by the traversing process to access nodes.
+     */
+    public interface TraversingSet<T> {
+        public void put(T t);
+        public T get();
+        public boolean isEmpty();
+    }
+
+    /**
+     * An implementation of TraversingSet that uses a stack as the underlying collection.
+     */
+    public class TraversingSetStack<T> implements TraversingSet<T> {
+        private Stack<T> stack;
+
+        public TraversingSetStack() {
+            this.stack = new Stack<T>();
+        }
+
+        public void put(T t) {
+            this.stack.push(t); 
+        }
+
+        public T get() {
+            return this.stack.pop();
+        }
+
+        public boolean isEmpty() {
+            return this.stack.isEmpty();
+        }
+    }
+
+
+    /**
+     * An implementation of TraversingSet that uses an implementation of Queue as the underlying collection.
+     */
+    public class TraversingSetQueue<T> implements TraversingSet<T> {
+        private LinkedList<T> list;
+
+        public TraversingSetQueue() {
+            this.list = new LinkedList<T>();
+        }
+
+        public void put(T t) {
+            this.list.offer(t); 
+        }
+
+        public T get() {
+            return this.list.poll();
+        }
+
+        public boolean isEmpty() {
+            return this.list.isEmpty();
         }
     }
 
     /**
-     * Just an interface to ensure a "list" and "output" functions
+     * Just an interface to ensure a "list" and "output" functions exist
+     * Since we are sort of dynamically setting up a "tree" as we are traversing thru nodes, a 
+     * "getChildren" method needs to be implemented.
      */
     public interface NodeData {
         public Iterable<NodeData> getChildren();
@@ -149,6 +210,7 @@ public class Test {
             if (argc.length > 1 && argc[1].equalsIgnoreCase("breadth")) {
                 System.out.println("\n\nLIST BY BREADTH\n" + help);
                 Test.Node rootNode = test.new Node(root);
+                // this traverses the Folder by BREADTH
                 rootNode.traverseBreadth();
 
                 // spit out folder by breadth
@@ -162,6 +224,7 @@ public class Test {
             } else {
                 System.out.println("\n\nLIST BY DEPTH\n" + help);
                 Test.Node rootNode = test.new Node(root);
+                // this traverses the Folder by DEPTH
                 rootNode.traverseDepth();
 
                 // spit out folder by depth
@@ -174,7 +237,9 @@ public class Test {
                 }
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
 }
+
